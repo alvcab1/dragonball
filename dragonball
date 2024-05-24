@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dragon Ball Z API</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #007acc;
+    }
+    .busqueda {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .busqueda div {
+      margin-right: 10px;
+    }
+    .busqueda input, .busqueda button {
+      padding: 8px;
+      font-size: 16px;
+      border: 1px solid #007acc;
+      border-radius: 4px;
+    }
+    .busqueda button {
+      background-color: #007acc;
+      color: #fff;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #007acc;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .detalles {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #e7f3fe;
+      border: 1px solid #007acc;
+      border-radius: 8px;
+    }
+    .detalles img {
+      max-width: 150px;
+      margin-right: 20px;
+      float: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dragon Ball Z</h1>
+
+  <div class="busqueda">
+    <div>
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" class="buscarInput" placeholder="Nombre">
+    </div>
+    <div>
+      <label for="raza">Raza:</label>
+      <input type="text" id="raza" class="buscarInput" placeholder="Raza">
+    </div>
+    <div>
+      <label for="genero">Género:</label>
+      <input type="text" id="genero" class="buscarInput" placeholder="Género">
+    </div>
+    <div>
+      <button onclick="buscarPersonajes()">Buscar</button>
+    </div>
+  </div>
+
+  <table id="tablaPersonajes">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Raza</th>
+        <th>Género</th>
+      </tr>
+    </thead>
+    <tbody id="listaPersonajes"></tbody>
+  </table>
+
+  <div id="detallesPersonaje" class="detalles" style="display:none;"></div>
+
+  <script>
+    const API_URL = 'https://dragonball-api.com/api/characters';
+
+    async function fetchCharacters(url) {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        mostrar(data.items);
+      } catch (error) {
+        console.error('Error al obtener los personajes:', error);
+      }
+    }
+
+    function mostrar(personajes) {
+      const listaPersonajes = document.getElementById('listaPersonajes');
+      listaPersonajes.innerHTML = '';
+      personajes.forEach(personaje => {
+        const fila = document.createElement('tr');
+
+        const idCelda = document.createElement('td');
+        idCelda.textContent = personaje.id;
+        fila.appendChild(idCelda);
+
+        const nombreCelda = document.createElement('td');
+        const nombreLink = document.createElement('a');
+        nombreLink.textContent = personaje.name;
+        nombreLink.href = '#';
+        nombreLink.onclick = () => mostrarDetalles(personaje);
+        nombreCelda.appendChild(nombreLink);
+        fila.appendChild(nombreCelda);
+
+        const razaCelda = document.createElement('td');
+        razaCelda.textContent = personaje.race;
+        fila.appendChild(razaCelda);
+
+        const generoCelda = document.createElement('td');
+        generoCelda.textContent = personaje.gender;
+        fila.appendChild(generoCelda);
+
+        listaPersonajes.appendChild(fila);
+      });
+    }
+
+    function mostrarDetalles(personaje) {
+      const detallesPersonaje = document.getElementById('detallesPersonaje');
+      detallesPersonaje.innerHTML = `
+        <h2>${personaje.name}</h2>
+        <img src="${personaje.image}" alt="${personaje.name}">
+        <p><strong>ID:</strong> ${personaje.id}</p>
+        <p><strong>Raza:</strong> ${personaje.race}</p>
+        <p><strong>Género:</strong> ${personaje.gender}</p>
+        <p><strong>Ki:</strong> ${personaje.ki}</p>
+        <p><strong>Max Ki:</strong> ${personaje.maxKi}</p>
+        <p><strong>Afiliación:</strong> ${personaje.affiliation}</p>
+        <p><strong>Descripción:</strong> ${personaje.description}</p>
+      `;
+      detallesPersonaje.style.display = 'block';
+    }
+
+    function buscarPersonajes() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const raza = document.getElementById('raza').value.trim();
+      const genero = document.getElementById('genero').value.trim();
+      let url = API_URL;
+
+      const parametros = new URLSearchParams();
+      if (nombre) {
+        parametros.append('name', nombre);
+      }
+      if (raza) {
+        parametros.append('race', raza);
+      }
+      if (genero) {
+        parametros.append('gender', genero);
+      }
+      if (parametros.toString()) {
+        url += '?' + parametros.toString();
+      }
+
+      fetchCharacters(url);
+    }
+
+    fetchCharacters(API_URL);
+  </script>
+</body>
+</html>
